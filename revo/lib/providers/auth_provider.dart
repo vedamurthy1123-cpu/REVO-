@@ -6,6 +6,19 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   String _role = 'customer';
   Map<String, dynamic>? _profile;
+  bool _initialized = false;
+
+  AuthProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    if (AuthService.isLoggedIn) {
+      await _loadRole();
+    }
+    _initialized = true;
+    notifyListeners();
+  }
 
   bool get loading => _loading;
   String? get error => _error;
@@ -13,6 +26,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isAdmin => _role == 'admin';
   Map<String, dynamic>? get profile => _profile;
   bool get isLoggedIn => AuthService.isLoggedIn;
+  bool get initialized => _initialized;
 
   Future<bool> signUp(String email, String password, String fullName) async {
     _loading = true;

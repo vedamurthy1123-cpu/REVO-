@@ -25,6 +25,7 @@ import 'screens/admin/admin_login_screen.dart';
 import 'screens/admin/admin_shell.dart';
 import 'screens/admin/add_item_screen.dart';
 import 'constants/keys.dart';
+import 'widgets/protected_route.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,17 +60,17 @@ class RevoApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (_) => const SplashScreen(),
-          '/login': (_) => const LoginScreen(),
-          '/signup': (_) => const SignupScreen(),
-          '/home': (_) => const StudentShell(),
-          '/cart': (_) => const CartScreen(),
-          '/checkout': (_) => const CheckoutScreen(),
-          '/wallet': (_) => const WalletScreen(),
-          '/admin-login': (_) => const AdminLoginScreen(),
-          '/admin': (_) => const AdminShell(),
-          '/add-item': (_) => const AddItemScreen(),
-          '/order-history': (_) => const OrderHistoryScreen(),
-          '/notifications': (_) => const NotificationsScreen(),
+          '/login': (_) => const ProtectedRoute(requiredRole: 'guest', child: LoginScreen()),
+          '/signup': (_) => const ProtectedRoute(requiredRole: 'guest', child: SignupScreen()),
+          '/home': (_) => const ProtectedRoute(requiredRole: 'customer', child: StudentShell()),
+          '/cart': (_) => const ProtectedRoute(requiredRole: 'customer', child: CartScreen()),
+          '/checkout': (_) => const ProtectedRoute(requiredRole: 'customer', child: CheckoutScreen()),
+          '/wallet': (_) => const ProtectedRoute(requiredRole: 'customer', child: WalletScreen()),
+          '/admin-login': (_) => const ProtectedRoute(requiredRole: 'guest', child: AdminLoginScreen()),
+          '/admin': (_) => const ProtectedRoute(requiredRole: 'admin', child: AdminShell()),
+          '/add-item': (_) => const ProtectedRoute(requiredRole: 'admin', child: AddItemScreen()),
+          '/order-history': (_) => const ProtectedRoute(requiredRole: 'customer', child: OrderHistoryScreen()),
+          '/notifications': (_) => const ProtectedRoute(requiredRole: 'customer', child: NotificationsScreen()),
         },
       ),
     );
