@@ -1,0 +1,22 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+  errors:
+    todo: ignore
+    deprecated_member_use: info
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - always_declare_return_types
+    - avoid_print: false # Sometimes useful for web debugging
+    - camel_case_types
+    - library_names
+    - library_prefixes
+    - non_constant_identifier_names
+    - prefer_final_fields
+    - type_init_formals
+    - use_key_in_widget_constructors

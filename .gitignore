@@ -1,0 +1,16 @@
+# IDE configs
+.idea/
+.vscode/
+*.iml
+
+# Logs and temp files
+*.log
+*.tmp
+temp/
+build/
+bin/
+obj/
+
+# Agent configuration caches
+.claude/
+agent/
