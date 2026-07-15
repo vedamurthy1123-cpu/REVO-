@@ -19,7 +19,23 @@ class AuthService {
       }
       // ignore: avoid_print
       print('🔐 [Auth] User signed up: ${res.user!.email}');
-      return {'success': true, 'message': 'Account created!'};
+
+      // If email confirmation is required, the session will be null
+      // and emailConfirmedAt will be null.
+      final isConfirmed = res.user!.emailConfirmedAt != null;
+      if (!isConfirmed) {
+        // Sign out the temporary session created by signUp so the user
+        // cannot access protected areas before confirming their email.
+        await _client.auth.signOut();
+        return {
+          'success': true,
+          'requiresConfirmation': true,
+          'message':
+              'A confirmation email has been sent to $email. Please verify your email before logging in.',
+        };
+      }
+
+      return {'success': true, 'requiresConfirmation': false, 'message': 'Account created!'};
     } on AuthException catch (e) {
       // ignore: avoid_print
       print('🔐 [Auth Error] Signup: ${e.message}');
@@ -43,6 +59,20 @@ class AuthService {
       if (res.user == null) {
         return {'success': false, 'message': 'Login failed.'};
       }
+
+      // Block login if the user has not confirmed their email yet.
+      if (res.user!.emailConfirmedAt == null) {
+        // Sign out immediately so no session is retained.
+        await _client.auth.signOut();
+        // ignore: avoid_print
+        print('🔐 [Auth] Login blocked – email not confirmed: ${res.user!.email}');
+        return {
+          'success': false,
+          'message':
+              'Please verify your email address before logging in. Check your inbox for the confirmation link.',
+        };
+      }
+
       // ignore: avoid_print
       print('🔐 [Auth] User logged in: ${res.user!.email}');
       return {'success': true, 'message': 'Welcome back!'};

@@ -36,13 +36,69 @@ class _SignupScreenState extends State<SignupScreen> {
     );
     if (!mounted) return;
     if (ok) {
-      navigator.pushReplacementNamed('/home');
+      if (auth.requiresConfirmation) {
+        // Show "check your email" screen – do NOT navigate to /home
+        _showVerifyEmailDialog(auth);
+      } else {
+        // Email confirmation is disabled in Supabase; go straight home
+        navigator.pushReplacementNamed('/home');
+      }
     } else {
       messenger.showSnackBar(
         SnackBar(content: Text(auth.error ?? 'Signup failed')),
       );
     }
   }
+
+  void _showVerifyEmailDialog(AuthProvider auth) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: const Icon(Icons.mark_email_unread_outlined,
+            size: 48, color: Colors.black87),
+        title: const Text(
+          'Verify your email',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'A confirmation link has been sent to\n${_emailCtrl.text.trim()}',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Click the link in your email to activate your account, then come back and log in.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(); // close dialog
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text('GO TO LOGIN'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

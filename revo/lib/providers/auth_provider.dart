@@ -8,6 +8,10 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? _profile;
   bool _initialized = false;
 
+  /// True after the last signUp returned a pending-confirmation response.
+  bool _requiresConfirmation = false;
+  bool get requiresConfirmation => _requiresConfirmation;
+
   AuthProvider() {
     _init();
   }
@@ -31,6 +35,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> signUp(String email, String password, String fullName) async {
     _loading = true;
     _error = null;
+    _requiresConfirmation = false;
     notifyListeners();
     final res = await AuthService.signUp(
         email: email, password: password, fullName: fullName);
@@ -39,6 +44,13 @@ class AuthProvider extends ChangeNotifier {
       _error = res['message'];
       notifyListeners();
       return false;
+    }
+    // If email confirmation is required, do NOT load a role or navigate home.
+    // AuthService has already signed the user out.
+    if (res['requiresConfirmation'] == true) {
+      _requiresConfirmation = true;
+      notifyListeners();
+      return true;
     }
     await _loadRole();
     notifyListeners();
