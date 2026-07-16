@@ -13,6 +13,7 @@ class AuthService {
         email: email,
         password: password,
         data: {'full_name': fullName},
+        emailRedirectTo: 'io.supabase.revo://login-callback/',
       );
       if (res.user == null) {
         return {'success': false, 'message': 'Signup failed. Try again.'};
