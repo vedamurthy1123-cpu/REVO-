@@ -13,7 +13,7 @@ class AuthService {
         email: email,
         password: password,
         data: {'full_name': fullName},
-        emailRedirectTo: 'io.supabase.revo://login-callback/',
+        emailRedirectTo: 'https://vedamurthy1123-cpu.github.io/REVO-/callback.html',
       );
       if (res.user == null) {
         return {'success': false, 'message': 'Signup failed. Try again.'};
