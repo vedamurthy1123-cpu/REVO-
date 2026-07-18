@@ -32,6 +32,8 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => AuthService.isLoggedIn;
   bool get initialized => _initialized;
 
+  static bool isManualLogin = false;
+
   Future<bool> signUp(String email, String password, String fullName) async {
     _loading = true;
     _error = null;
@@ -58,19 +60,26 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
+    isManualLogin = true;
     _loading = true;
     _error = null;
     notifyListeners();
-    final res = await AuthService.login(email: email, password: password);
-    _loading = false;
-    if (!res['success']) {
-      _error = res['message'];
+    try {
+      final res = await AuthService.login(email: email, password: password);
+      _loading = false;
+      if (!res['success']) {
+        _error = res['message'];
+        notifyListeners();
+        return false;
+      }
+      await _loadRole();
       notifyListeners();
-      return false;
+      return true;
+    } finally {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        isManualLogin = false;
+      });
     }
-    await _loadRole();
-    notifyListeners();
-    return true;
   }
 
   Future<void> logout() async {
