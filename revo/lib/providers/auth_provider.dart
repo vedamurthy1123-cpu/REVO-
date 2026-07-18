@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -7,6 +9,7 @@ class AuthProvider extends ChangeNotifier {
   String _role = 'customer';
   Map<String, dynamic>? _profile;
   bool _initialized = false;
+  late final StreamSubscription<AuthState> _authSub;
 
   /// True after the last signUp returned a pending-confirmation response.
   bool _requiresConfirmation = false;
@@ -22,6 +25,27 @@ class AuthProvider extends ChangeNotifier {
     }
     _initialized = true;
     notifyListeners();
+
+    _authSub = AuthService.authStateChanges.listen((data) async {
+      final event = data.event;
+      final session = data.session;
+
+      if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
+        if (session != null) {
+          await _loadRole();
+        }
+      } else if (event == AuthChangeEvent.signedOut) {
+        _role = 'customer';
+        _profile = null;
+      }
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub.cancel();
+    super.dispose();
   }
 
   bool get loading => _loading;
@@ -31,8 +55,6 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get profile => _profile;
   bool get isLoggedIn => AuthService.isLoggedIn;
   bool get initialized => _initialized;
-
-  static bool isManualLogin = false;
 
   Future<bool> signUp(String email, String password, String fullName) async {
     _loading = true;
@@ -60,26 +82,19 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
-    isManualLogin = true;
     _loading = true;
     _error = null;
     notifyListeners();
-    try {
-      final res = await AuthService.login(email: email, password: password);
-      _loading = false;
-      if (!res['success']) {
-        _error = res['message'];
-        notifyListeners();
-        return false;
-      }
-      await _loadRole();
+    final res = await AuthService.login(email: email, password: password);
+    _loading = false;
+    if (!res['success']) {
+      _error = res['message'];
       notifyListeners();
-      return true;
-    } finally {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        isManualLogin = false;
-      });
+      return false;
     }
+    await _loadRole();
+    notifyListeners();
+    return true;
   }
 
   Future<void> logout() async {

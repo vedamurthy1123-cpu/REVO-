@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -39,38 +38,8 @@ Future<void> main() async {
   runApp(const RevoApp());
 }
 
-class RevoApp extends StatefulWidget {
+class RevoApp extends StatelessWidget {
   const RevoApp({super.key});
-
-  @override
-  State<RevoApp> createState() => _RevoAppState();
-}
-
-class _RevoAppState extends State<RevoApp> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-  late final StreamSubscription<AuthState> _authSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
-      final event = data.event;
-      
-      if (event == AuthChangeEvent.signedIn) {
-        if (!AuthProvider.isManualLogin) {
-          // If signed in via deep link (not manually), sign out and navigate to login page directly.
-          await Supabase.instance.client.auth.signOut();
-          _navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _authSubscription.cancel();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +54,6 @@ class _RevoAppState extends State<RevoApp> {
       ],
       child: MaterialApp(
         title: 'REVO',
-        navigatorKey: _navigatorKey,
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         theme: AppTheme.theme,
